@@ -1,0 +1,26 @@
+h1 {
+	font-family: 'Six Caps', sans-serif;
+	color: rgba(55, 194, 67, 0.75);
+  text-shadow: -2px -2px 0 rgba(0, 0, 0, 0.125);
+  font-size: 100px;
+}
+h2 {
+	font-family: 'Staatliches', cursive;
+	color: rgb(248, 189, 101);
+  text-shadow: -2px -2px 0 rgba(0, 0, 0, 0.125);
+  
+}
+body {
+  font-family: 'Staatliches', cursive;
+}
+.dropdown {
+    width: 50%;
+    font-family: 'Staatliches', cursive;
+    
+
+  }
+.sorting {
+  border-color: rgb(51, 156, 121);
+  background-color: rgb(51, 156, 121);
+
+}

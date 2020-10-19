@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script type="text/javascript" src="https://d3js.org/d3.v6.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+  <link href="https://fonts.googleapis.com/css2?family=Aclonica&family=Six+Caps&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>Coffee House Chains </h1>
+    <h2>A ranking of selected leading coffee house chains worldwide</h2>
+    <div class="dropdown">
+      <label for="group-by">Group By</label>
+      <select id="group-by">
+        <option value="stores">Stores worldwide</option>
+        <option value="revenue">Revenue in billion U.S. dollars</option>
+      </select>
+    </div>
+    <button class="sorting">
+      Sort 
+    </button>
+    <div class="chart">
+      <svg class="chart"></svg>
+    </div>
+
+  </div>
+</body>
+
+<script type="text/javascript">
+
+
+  const margin = { top: 20, left: 40, bottom: 20, right: 20 };
+  const width = 650 - margin.left - margin.bottom;
+  const height = 500 - margin.top - margin.bottom;
+
+  const svg = d3.select('.chart')
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.right + ')');
+
+  const colorlists = d3.scaleBand()
+    .range([0, width]);
+
+  const xScale = d3.scaleBand()
+    .rangeRound([0, width])
+    .paddingInner(0.1);
+
+  const yScale = d3.scaleLinear()
+    .range([height, 0]);
+
+  svg.append('g')
+    .attr("class", "y-axis");
+
+  svg.append('g')
+    .attr("class", "x-axis")
+    .attr("transform", `translate(0, ${height})`);
+
+  svg.append("text")
+    .attr("class", "y-label")
+    .attr("x", -margin.left)
+    .attr("y", -5)
+    .attr("text-anchor", "start");
+
+  let sorting = true;
+  let type = 'stores';
+
+  function update(data, type, sorting) {
+    if (sorting) {
+      data.sort((a, b) => a[type] - b[type]).reverse();
+    }
+    else {
+      data.sort((a, b) => a[type] - b[type]);
+    }
+
+    colorlists.domain(data.map(d => d.logo)); //I wanted to make the color of the bars
+    console.log(colorlists.domain());         //match the logo colors of the brands
+
+    xScale.domain(data.map(d => d.company));
+    console.log(xScale.domain());
+
+    yScale.domain([0, d3.max(data, d => d[type])]);
+    console.log(yScale.domain());
+
+
+    const bars = svg.selectAll('.bars')
+      .data(data);
+
+
+    bars.enter()
+      .append("rect")
+      .attr("class", "bars")
+      .attr('x', d => xScale(d.company))
+      .attr("width", xScale.bandwidth())
+      .merge(bars)
+      .transition()
+      .duration(600)
+      .attr('y', d => yScale(d[type]))
+      .attr("height", d => height - yScale(d[type]))
+      .style("fill",function (d) {
+        return d.logo;
+    });
+
+    bars
+      .exit()
+      .transition()
+      .duration(1000)
+      .attr('y', height)
+      .remove();
+
+    const xAxis = d3.axisBottom(xScale)
+      .ticks(5, 's');
+    const yAxis = d3.axisLeft(yScale)
+      .ticks(10);
+
+    svg.select('.x-axis')
+      .transition()
+      .duration(1000)
+      .call(xAxis);
+
+    svg.select('.y-axis')
+      .transition()
+      .duration(600)
+      .call(yAxis);
+
+    svg.select(".y-label")
+      .text(function (d) {
+        if (type == 'stores') { return "Stores" }  // <== Add these
+        else { return "Revenue (in Billion USD)" }          // <== Add these
+        ;
+      });
+
+  }
+
+  d3.csv("coffee-house-chains.csv", d3.autoType).then(data => {
+    update(data, type, sorting);
+    console.log(data);
+
+    d3.select('#group-by').on('change', (e) => {
+      type = e.target.value
+      console.log(type)
+      update(data, type, sorting);
+    });
+
+    d3.select('.sorting').on('click', () => {
+      sorting = !sorting
+      update(data, type, sorting);
+    });
+
+  });
+
+
+</script>
+
+</html>
